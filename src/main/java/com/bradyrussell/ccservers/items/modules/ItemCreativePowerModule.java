@@ -1,5 +1,6 @@
 package com.bradyrussell.ccservers.items.modules;
 
+import com.bradyrussell.ccservers.CCServers;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import com.bradyrussell.ccservers.items.EServerModuleType;
 import com.bradyrussell.ccservers.items.ItemServerModuleBase;
@@ -17,13 +18,13 @@ public class ItemCreativePowerModule extends ItemServerModuleBase {
 
     @Override
     public int getCurrentEnergyConsumption(ItemStack moduleItem) {
-        return 0;
+        return 0 * CCServers.RF_MULTIPLIER;
     }
 
 
     @Override
     public int getModuleServerEnergyCapacity(ItemStack moduleItem) {
-        return 0;
+        return 0 * CCServers.RF_MULTIPLIER;
     }
 
     private int i = 0;

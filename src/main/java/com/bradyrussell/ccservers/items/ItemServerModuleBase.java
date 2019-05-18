@@ -1,5 +1,6 @@
 package com.bradyrussell.ccservers.items;
 
+import com.bradyrussell.ccservers.CCServers;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -10,7 +11,7 @@ public abstract class ItemServerModuleBase extends Item {
 
     public ItemServerModuleBase(EServerModuleType type) {
         this.type = type;
-        this.setCreativeTab(CreativeTabs.REDSTONE);
+        this.setCreativeTab(CCServers.ccserversTab);
         this.setMaxStackSize(1);
     }
 

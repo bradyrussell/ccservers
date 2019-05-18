@@ -1,9 +1,9 @@
 package com.bradyrussell.ccservers;
 
 public enum EServerChassisType {
-    IRON("Iron Server Chassis",4, 10000),
-    GOLD("Gold Server Chassis",8, 50000),
-    DIAMOND("Diamond Server Chassis",16, 100000);
+    IRON("Iron Server Chassis",4, 10000 * CCServers.RF_MULTIPLIER),
+    GOLD("Gold Server Chassis",8, 50000 * CCServers.RF_MULTIPLIER),
+    DIAMOND("Diamond Server Chassis",16, 100000 * CCServers.RF_MULTIPLIER);
 
     final public String registryName;
     final public int availableSlots, baseCapacity;

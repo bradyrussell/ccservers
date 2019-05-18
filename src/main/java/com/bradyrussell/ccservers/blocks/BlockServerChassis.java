@@ -55,7 +55,7 @@ public class BlockServerChassis extends BlockContainer {
     public BlockServerChassis(EServerChassisType eServerChassisType) {
         super(Material.IRON);
         chassisType = eServerChassisType;
-        this.setCreativeTab(CreativeTabs.REDSTONE);
+        this.setCreativeTab(CCServers.ccserversTab);
         setDefaultState(blockState.getBaseState().withProperty(PROPERTYFACING, EnumFacing.SOUTH));
     }
 

@@ -1,10 +1,11 @@
 package com.bradyrussell.ccservers.items;
 
+import com.bradyrussell.ccservers.CCServers;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import net.minecraft.item.ItemStack;
 
 public abstract class ItemServerPoweredLuaModuleBase extends ItemServerLuaModuleBase {
-    protected static final int energyDurabilityBarFactor = 1000;
+    protected static final int energyDurabilityBarFactor = 1000 * CCServers.RF_MULTIPLIER;
 
     public ItemServerPoweredLuaModuleBase(EServerModuleType type) {
         super(type);
