@@ -1,10 +1,12 @@
 package com.bradyrussell.ccservers;
 
 import com.bradyrussell.ccservers.blocks.BlockServerChassis;
+import com.bradyrussell.ccservers.computercraft.ICCServersPeripheral;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import com.bradyrussell.ccservers.items.EServerModuleType;
 import com.bradyrussell.ccservers.network.GuiHandlerRegistry;
 import com.bradyrussell.ccservers.network.packets.PacketParticle;
+import dan200.computercraft.api.ComputerCraftAPI;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
@@ -49,7 +51,7 @@ public class StartupCommon {
         }
 
         // Each of your tile entities needs to be registered with a name that is unique to your mod.
-        GameRegistry.registerTileEntity(TileEntityServerChassis.class, new ResourceLocation("ccserver_tile_entity"));
+        GameRegistry.registerTileEntity(TileEntityServerChassis.class, new ResourceLocation(CCServers.prependModID("ccserver_tile_entity")));
 
         // You need to register a GUIHandler for the container.  However there can be only one handler per mod, so for the purposes
         //   of this project, we create a single GuiHandlerRegistry for all examples.
@@ -69,6 +71,8 @@ public class StartupCommon {
     private static int messageID = 0;
     public static void initCommon() {
         CCServers.NetworkWrapper.registerMessage(PacketParticle.PacketParticleHandler.class,PacketParticle.class, messageID++, Side.CLIENT);
+
+        ComputerCraftAPI.registerPeripheralProvider(new ICCServersPeripheral.Provider());
     }
 
     public static void postInitCommon() {

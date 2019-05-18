@@ -26,7 +26,7 @@ public class ItemCreativePowerModule extends ItemServerModuleBase {
     @Override
     public void onTick(ItemStack moduleItem, TileEntityServerChassis serverChassis) {
         if(i++ == 10) {
-            serverChassis.energyStorage.setEnergyStored(serverChassis.energyStorage.getMaxEnergyStored());
+            serverChassis.getEnergyStorage().setEnergyStored(serverChassis.getEnergyStorage().getMaxEnergyStored());
             i = 0;
         }
     }

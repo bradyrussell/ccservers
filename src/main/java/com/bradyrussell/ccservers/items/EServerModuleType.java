@@ -8,7 +8,7 @@ public enum EServerModuleType {
     F(ItemTestConsumptionModule::new),
     TEST_POWER_BATTERY(ItemTestCapacityModule::new),
     TEST_POWER_OUTPUT(ItemEnergyOutputModule::new),
-    TEST_BACKUP_POWER_SUPPLY(ItemBackupPowerSupplyModule::new),
+    TEST_BACKUP_POWER_SUPPLY(ItemBackupPowerSupplyIModule::new),
     CREATIVE_POWER(ItemCreativePowerModule::new);
 
     public final String registryName;

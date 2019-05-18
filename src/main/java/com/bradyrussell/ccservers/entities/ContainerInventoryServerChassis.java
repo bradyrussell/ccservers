@@ -57,7 +57,7 @@ public class ContainerInventoryServerChassis extends Container {
 
     public ContainerInventoryServerChassis(InventoryPlayer invPlayer, TileEntityServerChassis tileEntityServerChassis) {
         this.tileEntityServerChassis = tileEntityServerChassis;
-        SERVER_MODULE_SLOTS_COUNT = tileEntityServerChassis.chassisType.availableSlots;
+        SERVER_MODULE_SLOTS_COUNT = tileEntityServerChassis.getChassisType().availableSlots;
         TOTAL_SERVER_SLOTS_COUNT = SERVER_MODULE_SLOTS_COUNT; /*+ INPUT_SLOTS_COUNT + OUTPUT_SLOTS_COUNT*///;
 
         final int SLOT_X_SPACING = 18;

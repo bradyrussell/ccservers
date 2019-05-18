@@ -57,8 +57,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
  * The initClientOnly method must be moved to a different class StartupClientOnly, which is never loaded in the DedicatedServer at all.
  */
 
-@Mod(modid = CCServers.MODID, version = CCServers.VERSION//,
-        /*guiFactory = ccservers.CCServers.GUIFACTORY*/)
+@Mod(modid = CCServers.MODID, version = CCServers.VERSION, dependencies = "required-after:computercraft")
 //delete guiFactory if MBE70 not present and you don't have a configuration GUI
 public class CCServers {
     // you also need to update the modid and version in two other places as well:

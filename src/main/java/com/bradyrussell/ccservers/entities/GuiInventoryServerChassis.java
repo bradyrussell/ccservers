@@ -48,7 +48,7 @@ public class GuiInventoryServerChassis extends GuiContainer {
         //chassisType = tileEntityServerChassis.chassisType;
 
         this.tileEntity = tileEntityServerChassis;
-        texture = new ResourceLocation("ccservers", "textures/gui/"+ tileEntityServerChassis.chassisType.registryName+".png");
+        texture = new ResourceLocation("ccservers", "textures/gui/"+ tileEntityServerChassis.getChassisType().registryName+".png");
     }
 
     // some [x,y] coordinates of graphical elements
@@ -93,9 +93,9 @@ public class GuiInventoryServerChassis extends GuiContainer {
 
         final int LABEL_XPOS = 30;
         final int LABEL_YPOS = 5;
-        fontRenderer.drawString(tileEntity.chassisType.title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());
-        fontRenderer.drawString(tileEntity.energyCapacityDisplay.getDisplayString()+" RF Capacity", LABEL_XPOS, LABEL_YPOS+10, Color.darkGray.getRGB());
-        fontRenderer.drawString("Consuming "+tileEntity.energyConsumedDisplay.getDisplayString()+" RF/t", LABEL_XPOS, LABEL_YPOS+20, Color.darkGray.getRGB());
+        fontRenderer.drawString(tileEntity.getChassisType().title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());
+        fontRenderer.drawString(tileEntity.getEnergyCapacityDisplay().getDisplayString()+" RF Capacity", LABEL_XPOS, LABEL_YPOS+10, Color.darkGray.getRGB());
+        fontRenderer.drawString("Consuming "+ tileEntity.getEnergyConsumedDisplay().getDisplayString()+" RF/t", LABEL_XPOS, LABEL_YPOS+20, Color.darkGray.getRGB());
 
         List<String> hoveringText = new ArrayList<>();
 
@@ -103,15 +103,15 @@ public class GuiInventoryServerChassis extends GuiContainer {
         if (isInRect(guiLeft + CHARGE_BAR_XPOS, guiTop + CHARGE_BAR_YPOS, CHARGE_BAR_WIDTH, CHARGE_BAR_HEIGHT, mouseX, mouseY)) {
             hoveringText.add("Energy:");
 
-            if(tileEntity.energyDisplay.getAmount() < 0) System.out.println("<<<<<DEBUG ENERGY DISPLAY UNDERFLOW>>>>>");
-            hoveringText.add(Math.round(100*tileEntity.displayEnergyPct) + "% "+tileEntity.energyDisplay.getAmount()+" "+tileEntity.energyDisplay.getSuffix());
+            if(tileEntity.getEnergyDisplay().getAmount() < 0) System.out.println("<<<<<DEBUG ENERGY DISPLAY UNDERFLOW>>>>>");
+            hoveringText.add(Math.round(100*tileEntity.displayEnergyPct) + "% "+ tileEntity.getEnergyDisplay().getAmount()+" "+ tileEntity.getEnergyDisplay().getSuffix());
         }
 
         // If the mouse is over one of the burn time indicator add the burn time indicator hovering text
         //for (int i = 0; i < TileEntityServerChassis.BATTERY_SLOTS_COUNT; ++i) {
             if (isInRect(guiLeft + RS_BTN_XPOS, guiTop + RS_BTN_YPOS, RS_BTN_WIDTH, RS_BTN_HEIGHT, mouseX, mouseY)) {
                 isRedstoneButtonHovered = true;
-                hoveringText.add("Redstone Behavior: "+tileEntity.redstoneBehavior.name());
+                hoveringText.add("Redstone Behavior: "+ tileEntity.getRedstoneBehavior().name());
             } else {
                 isRedstoneButtonHovered = false;
             }
@@ -135,7 +135,7 @@ public class GuiInventoryServerChassis extends GuiContainer {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (isInRect(guiLeft + RS_BTN_XPOS, guiTop + RS_BTN_YPOS, RS_BTN_WIDTH, RS_BTN_HEIGHT, mouseX, mouseY)) {
-            tileEntity.redstoneBehavior = EServerRedstoneBehavior.getNext(tileEntity.redstoneBehavior);
+            tileEntity.setRedstoneBehavior(EServerRedstoneBehavior.getNext(tileEntity.getRedstoneBehavior()));
         }
     }
 }
