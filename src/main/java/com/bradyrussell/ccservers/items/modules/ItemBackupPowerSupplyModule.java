@@ -2,14 +2,16 @@ package com.bradyrussell.ccservers.items.modules;
 
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import com.bradyrussell.ccservers.items.EServerModuleType;
-import com.bradyrussell.ccservers.items.ItemServerModuleBase;
+import com.bradyrussell.ccservers.items.ItemServerPoweredLuaModuleBase;
+import com.bradyrussell.ccservers.items.ModuleEnergy;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.lua.LuaException;
+import dan200.computercraft.api.peripheral.IComputerAccess;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
-public class ItemBackupPowerSupplyModule extends ItemServerModuleBase {
-    //private int currentDraw = 0;
-    private static final int maxCurrentDraw = 20;
-    private static final int energyDurabilityBarFactor = 1000;
+import javax.annotation.Nonnull;
+
+public class ItemBackupPowerSupplyModule extends ItemServerPoweredLuaModuleBase {
 
     private static final double BACKUP_PSU_ACTIVATION_THRESHOLD = .05;
 
@@ -19,72 +21,54 @@ public class ItemBackupPowerSupplyModule extends ItemServerModuleBase {
     }
 
     @Override
-    public int getCurrentEnergyConsumption(ItemStack moduleItem) {
-        return getItemCurrentDraw(moduleItem);
-    }
-
-    @Override
-    public int getModuleEnergyCapacity(ItemStack moduleItem) {
+    public int getModuleServerEnergyCapacity(ItemStack moduleItem) {
         return 0;
     }
 
     @Override
-    public void onTick(ItemStack moduleItem, TileEntityServerChassis serverChassis) {
-        int storedEnergy = getStoredEnergy(moduleItem);
+    public void onTick(ItemStack moduleItem, TileEntityServerChassis serverChassis) {  // this module has custom behavior because it doesnt just charge, it also releases
+        ItemServerPoweredLuaModuleBase.handleCharging(moduleItem, serverChassis);
+        int storedEnergy = ModuleEnergy.getEnergy(moduleItem);
 
-        if (getItemCurrentDraw(moduleItem) > 0 && serverChassis.isCurrentlyPowered) {
-            setStoredEnergy(moduleItem, Math.min(getItemCurrentDraw(moduleItem) + storedEnergy, getEnergyCapacity()));
-        }
-
-        setItemCurrentDraw(moduleItem,0);
-
-        if(serverChassis.energyStorage.getEnergyStored() < serverChassis.energyStorage.getMaxEnergyStored()*BACKUP_PSU_ACTIVATION_THRESHOLD){
+        if (serverChassis.getEnergyStorage().getEnergyStored() < serverChassis.getEnergyStorage().getMaxEnergyStored() * BACKUP_PSU_ACTIVATION_THRESHOLD) {
             // release power back to the server
-            final int energy = getStoredEnergy(moduleItem);
 
-            if(energy > 0) setStoredEnergy(moduleItem, energy - serverChassis.energyStorage.receiveEnergy(Math.min(maxCurrentDraw*5, energy), false));
+            final int energy = ModuleEnergy.getEnergy(moduleItem);
+
+            if (energy > 0)
+                serverChassis.getEnergyStorage().receiveEnergy(extractEnergy(moduleItem, type.maxDraw * 5),false);
 
         } else {
-            if (storedEnergy < getEnergyCapacity()) {
-                setItemCurrentDraw(moduleItem,Math.min(getEnergyCapacity() - storedEnergy, maxCurrentDraw));
+            if (storedEnergy < ModuleEnergy.getMaxEnergyStored(moduleItem)) {
+                setModuleCurrentDraw(moduleItem, Math.min(ModuleEnergy.getMaxEnergyStored(moduleItem) - storedEnergy, type.maxDraw));
             } else {
-                setItemCurrentDraw(moduleItem,0);
+                setModuleCurrentDraw(moduleItem, 0);
             }
         }
     }
 
-    public int getEnergyCapacity(){
-        switch (type){
-            case TEST_BACKUP_POWER_SUPPLY:
-                return 5000;
-            default:
-                return 0;
+    /* Computercraft Module Lua */
+
+    @Override
+    public String[] getMethodNames() {
+        return new String[]{"getStoredEnergy", "setStoredEnergy"};
+    }
+
+    @Override
+    public Object[] callMethod(ItemStack moduleStack, IComputerAccess computer, @Nonnull ILuaContext luaContext, int method, @Nonnull Object[] arguments) throws LuaException, InterruptedException {
+        switch (method) {
+            case 0: {
+                return new Object[]{ModuleEnergy.getEnergy(moduleStack), moduleStack.getDisplayName()};
+            }
+
+            case 6: {
+
+            }
+            default: {
+                throw new LuaException("not yet implemented");
+            }
         }
+
     }
 
-    public static void setStoredEnergy(ItemStack itemStack, int energy){
-        itemStack.getItem().setDamage(itemStack, (int) (energyDurabilityBarFactor-((double)energy/((ItemBackupPowerSupplyModule)itemStack.getItem()).getEnergyCapacity()*energyDurabilityBarFactor)));
-        itemStack.setStackDisplayName("Backup PSU: "+energy+" / "+((ItemBackupPowerSupplyModule)itemStack.getItem()).getEnergyCapacity()+" RF");
-        getNBT(itemStack).setInteger("stored_energy", energy);
-    }
-
-    public static int getStoredEnergy(ItemStack itemStack){
-        return getNBT(itemStack).getInteger("stored_energy");
-    }
-
-    public static void setItemCurrentDraw(ItemStack itemStack, int currentDraw){
-        getNBT(itemStack).setInteger("current_draw", currentDraw);
-    }
-
-    public static int getItemCurrentDraw(ItemStack itemStack){
-        return getNBT(itemStack).getInteger("current_draw");
-    }
-
-    public static NBTTagCompound getNBT(ItemStack itemStack){
-        if(itemStack.getTagCompound() != null) return itemStack.getTagCompound();
-        NBTTagCompound nbt = new NBTTagCompound();
-        itemStack.setTagCompound(nbt);
-        itemStack.getItem().setDamage(itemStack, energyDurabilityBarFactor);
-        return nbt;
-    }
 }

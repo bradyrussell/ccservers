@@ -50,6 +50,7 @@ import javax.annotation.Nullable;
  */
 public class BlockServerChassis extends BlockContainer {
     private EServerChassisType chassisType;
+    private TileEntityServerChassis entityServerChassis;
 
     public BlockServerChassis(EServerChassisType eServerChassisType) {
         super(Material.IRON);
@@ -62,13 +63,15 @@ public class BlockServerChassis extends BlockContainer {
     // Should return a new instance of the tile entity for the block
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileEntityServerChassis(chassisType);
+        entityServerChassis = new TileEntityServerChassis(chassisType);
+        return entityServerChassis;
     }
 
     @Nullable
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
-        return new TileEntityServerChassis(chassisType);
+        entityServerChassis = new TileEntityServerChassis(chassisType);
+        return entityServerChassis;
     }
 
     // Called when the block is right clicked
@@ -171,5 +174,17 @@ public class BlockServerChassis extends BlockContainer {
 
     public EServerChassisType getChassisType() {
         return chassisType;
+    }
+
+/*    @Override
+    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(world, pos, neighbor);
+        if(entityServerChassis != null)
+            entityServerChassis.handleRedstoneBehavior();
+    }*/
+
+    @Override
+    public boolean canConnectRedstone(IBlockState state, IBlockAccess world, BlockPos pos, @Nullable EnumFacing side) {
+        return true;
     }
 }

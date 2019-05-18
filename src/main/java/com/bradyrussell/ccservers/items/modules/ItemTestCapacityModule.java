@@ -17,7 +17,7 @@ public class ItemTestCapacityModule extends ItemServerModuleBase {
 
 
     @Override
-    public int getModuleEnergyCapacity(ItemStack moduleItem) {
+    public int getModuleServerEnergyCapacity(ItemStack moduleItem) {
         return 5000;
     }
 

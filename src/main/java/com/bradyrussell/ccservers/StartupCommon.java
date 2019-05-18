@@ -5,6 +5,7 @@ import com.bradyrussell.ccservers.computercraft.ICCServersPeripheral;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import com.bradyrussell.ccservers.items.EServerModuleType;
 import com.bradyrussell.ccservers.network.GuiHandlerRegistry;
+import com.bradyrussell.ccservers.network.packets.PacketGUI_ToggleServer;
 import com.bradyrussell.ccservers.network.packets.PacketParticle;
 import dan200.computercraft.api.ComputerCraftAPI;
 import net.minecraft.block.Block;
@@ -70,7 +71,7 @@ public class StartupCommon {
 
     private static int messageID = 0;
     public static void initCommon() {
-        CCServers.NetworkWrapper.registerMessage(PacketParticle.PacketParticleHandler.class,PacketParticle.class, messageID++, Side.CLIENT);
+        CCServers.NetworkWrapper.registerMessage(PacketGUI_ToggleServer.PacketGUI_ToggleServerHandler.class,PacketGUI_ToggleServer.class, messageID++, Side.SERVER);
 
         ComputerCraftAPI.registerPeripheralProvider(new ICCServersPeripheral.Provider());
     }

@@ -16,12 +16,9 @@ public abstract class ItemServerModuleBase extends Item {
 
     public abstract int getCurrentEnergyConsumption(ItemStack moduleItem);
 
-    public abstract int getModuleEnergyCapacity(ItemStack moduleItem);
+    public abstract int getModuleServerEnergyCapacity(ItemStack moduleItem);
 
     public abstract void onTick(ItemStack moduleItem, TileEntityServerChassis serverChassis);
 
-    //public void onPoweredTick(ItemStack moduleItem, TileEntityServerChassis serverChassis);
-
-    //public abstract void onInsufficientPowerTick(ItemStack moduleItem, TileEntityServerChassis serverChassis);
 
 }

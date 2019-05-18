@@ -1,6 +1,8 @@
 package com.bradyrussell.ccservers.entities;
 
 
+import com.bradyrussell.ccservers.CCServers;
+import com.bradyrussell.ccservers.network.packets.PacketGUI_ToggleServer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -48,7 +50,7 @@ public class GuiInventoryServerChassis extends GuiContainer {
         //chassisType = tileEntityServerChassis.chassisType;
 
         this.tileEntity = tileEntityServerChassis;
-        texture = new ResourceLocation("ccservers", "textures/gui/"+ tileEntityServerChassis.getChassisType().registryName+".png");
+        texture = new ResourceLocation("ccservers", "textures/gui/" + tileEntityServerChassis.getChassisType().registryName + ".png");
     }
 
     // some [x,y] coordinates of graphical elements
@@ -65,7 +67,30 @@ public class GuiInventoryServerChassis extends GuiContainer {
     private final int RS_BTN_ICON_V = 0;
     private final int RS_BTN_WIDTH = 18;
     private final int RS_BTN_HEIGHT = 18;
-    private final int RS_BTN_X_SPACING = 18;
+
+    private final int PWR_BTN_XPOS = 151;
+    private final int PWR_BTN_YPOS = 27;
+    private final int PWR_BTN_ICON_U = 190;   // texture position of flame icon
+    private final int PWR_BTN_ICON_V = 18;
+    private final int PWR_BTN_WIDTH = 18;
+    private final int PWR_BTN_HEIGHT = 18;
+
+
+/*    @Override
+    public void initGui() {
+        super.initGui();
+        this.buttonList.add(new GuiButton(1, 200, 20, 64, 24, "Power"));
+    }*/
+
+/*    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        super.actionPerformed(button);
+        switch (button.id){
+            case 1:{
+                CCServers.NetworkWrapper.sendToServer(new PacketGUI_ToggleServer());
+            }
+        }
+    }*/
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int x, int y) {
@@ -78,12 +103,16 @@ public class GuiInventoryServerChassis extends GuiContainer {
         // get cook progress as a double between 0 and 1
         double chargePct = tileEntity.displayEnergyPct;
         // draw the cook progress bar
-        drawTexturedModalRect(guiLeft + CHARGE_BAR_XPOS, guiTop + CHARGE_BAR_YPOS+(int)Math.round ((1-chargePct) * CHARGE_BAR_HEIGHT), CHARGE_BAR_ICON_U, CHARGE_BAR_ICON_V,
-                 CHARGE_BAR_WIDTH, (int)Math.round (chargePct * CHARGE_BAR_HEIGHT));
+        drawTexturedModalRect(guiLeft + CHARGE_BAR_XPOS, guiTop + CHARGE_BAR_YPOS + (int) Math.round((1 - chargePct) * CHARGE_BAR_HEIGHT), CHARGE_BAR_ICON_U, CHARGE_BAR_ICON_V + (int) Math.round((1 - chargePct) * CHARGE_BAR_HEIGHT),
+                CHARGE_BAR_WIDTH, (int) Math.round(chargePct * CHARGE_BAR_HEIGHT));
 
-        if(isRedstoneButtonHovered){
+        if (isRedstoneButtonHovered) {
             int yOffset = 0;
             drawTexturedModalRect(guiLeft + RS_BTN_XPOS, guiTop + RS_BTN_YPOS + yOffset, RS_BTN_ICON_U, RS_BTN_ICON_V + yOffset, RS_BTN_WIDTH, RS_BTN_HEIGHT - yOffset);
+        }
+
+        if (tileEntity.isServerEnabled()) {
+            drawTexturedModalRect(guiLeft + PWR_BTN_XPOS, guiTop + PWR_BTN_YPOS, PWR_BTN_ICON_U, PWR_BTN_ICON_V, PWR_BTN_WIDTH, PWR_BTN_HEIGHT);
         }
     }
 
@@ -94,8 +123,8 @@ public class GuiInventoryServerChassis extends GuiContainer {
         final int LABEL_XPOS = 30;
         final int LABEL_YPOS = 5;
         fontRenderer.drawString(tileEntity.getChassisType().title, LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());
-        fontRenderer.drawString(tileEntity.getEnergyCapacityDisplay().getDisplayString()+" RF Capacity", LABEL_XPOS, LABEL_YPOS+10, Color.darkGray.getRGB());
-        fontRenderer.drawString("Consuming "+ tileEntity.getEnergyConsumedDisplay().getDisplayString()+" RF/t", LABEL_XPOS, LABEL_YPOS+20, Color.darkGray.getRGB());
+        fontRenderer.drawString(tileEntity.getEnergyCapacityDisplay().getDisplayString() + " RF Capacity", LABEL_XPOS, LABEL_YPOS + 10, Color.darkGray.getRGB());
+        fontRenderer.drawString("Consuming " + tileEntity.getEnergyConsumedDisplay().getDisplayString() + " RF/t", LABEL_XPOS, LABEL_YPOS + 20, Color.darkGray.getRGB());
 
         List<String> hoveringText = new ArrayList<>();
 
@@ -103,18 +132,25 @@ public class GuiInventoryServerChassis extends GuiContainer {
         if (isInRect(guiLeft + CHARGE_BAR_XPOS, guiTop + CHARGE_BAR_YPOS, CHARGE_BAR_WIDTH, CHARGE_BAR_HEIGHT, mouseX, mouseY)) {
             hoveringText.add("Energy:");
 
-            if(tileEntity.getEnergyDisplay().getAmount() < 0) System.out.println("<<<<<DEBUG ENERGY DISPLAY UNDERFLOW>>>>>");
-            hoveringText.add(Math.round(100*tileEntity.displayEnergyPct) + "% "+ tileEntity.getEnergyDisplay().getAmount()+" "+ tileEntity.getEnergyDisplay().getSuffix());
+            if (tileEntity.getEnergyDisplay().getAmount() < 0)
+                System.out.println("<<<<<DEBUG ENERGY DISPLAY UNDERFLOW>>>>>");
+            hoveringText.add(Math.round(100 * tileEntity.displayEnergyPct) + "% " + tileEntity.getEnergyDisplay().getAmount() + " " + tileEntity.getEnergyDisplay().getSuffix());
         }
 
         // If the mouse is over one of the burn time indicator add the burn time indicator hovering text
         //for (int i = 0; i < TileEntityServerChassis.BATTERY_SLOTS_COUNT; ++i) {
-            if (isInRect(guiLeft + RS_BTN_XPOS, guiTop + RS_BTN_YPOS, RS_BTN_WIDTH, RS_BTN_HEIGHT, mouseX, mouseY)) {
-                isRedstoneButtonHovered = true;
-                hoveringText.add("Redstone Behavior: "+ tileEntity.getRedstoneBehavior().name());
-            } else {
-                isRedstoneButtonHovered = false;
-            }
+        if (isInRect(guiLeft + RS_BTN_XPOS, guiTop + RS_BTN_YPOS, RS_BTN_WIDTH, RS_BTN_HEIGHT, mouseX, mouseY)) {
+            isRedstoneButtonHovered = true;
+            hoveringText.add("Redstone Behavior: " + tileEntity.getRedstoneBehavior().name());
+        } else {
+            isRedstoneButtonHovered = false;
+        }
+
+        if (isInRect(guiLeft + PWR_BTN_XPOS, guiTop + PWR_BTN_YPOS, PWR_BTN_WIDTH, PWR_BTN_HEIGHT, mouseX, mouseY)) {
+            hoveringText.add((tileEntity.isServerEnabled() ? "Disable" : "Enable") + " Server");
+        }
+
+
         //}
         // If hoveringText is not empty draw the hovering text
         if (!hoveringText.isEmpty()) {
@@ -135,7 +171,10 @@ public class GuiInventoryServerChassis extends GuiContainer {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (isInRect(guiLeft + RS_BTN_XPOS, guiTop + RS_BTN_YPOS, RS_BTN_WIDTH, RS_BTN_HEIGHT, mouseX, mouseY)) {
-            tileEntity.setRedstoneBehavior(EServerRedstoneBehavior.getNext(tileEntity.getRedstoneBehavior()));
+            CCServers.NetworkWrapper.sendToServer(new PacketGUI_ToggleServer(2));
+        }
+        if (isInRect(guiLeft + PWR_BTN_XPOS, guiTop + PWR_BTN_YPOS, PWR_BTN_WIDTH, PWR_BTN_HEIGHT, mouseX, mouseY)) {
+            CCServers.NetworkWrapper.sendToServer(new PacketGUI_ToggleServer(1));
         }
     }
 }

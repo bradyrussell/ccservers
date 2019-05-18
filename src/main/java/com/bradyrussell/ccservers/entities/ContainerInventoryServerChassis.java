@@ -202,4 +202,8 @@ public class ContainerInventoryServerChassis extends Container {
             return TileEntityServerChassis.isItemValidForServerModuleSlot(stack);
         }
     }
+
+    public TileEntityServerChassis getTileEntityServerChassis() {
+        return tileEntityServerChassis;
+    }
 }

@@ -6,6 +6,8 @@ import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
 
+import javax.annotation.Nonnull;
+
 /**
  * All credit belongs to:
  * https://github.com/rolandoislas/PeripheralsPlusOne/blob/master/src/main/java/com/austinv11/peripheralsplusplus/lua/LuaObjectPeripheralWrap.java
@@ -21,13 +23,14 @@ public class LuaObjectPeripheralWrap implements ILuaObject {
         this.computer = computer;
     }
 
+    @Nonnull
     @Override
     public String[] getMethodNames() {
         return peripheral.getMethodNames();
     }
 
     @Override
-    public Object[] callMethod(ILuaContext context, int method, Object[] arguments) throws LuaException, InterruptedException {
+    public Object[] callMethod(@Nonnull ILuaContext context, int method, @Nonnull Object[] arguments) throws LuaException, InterruptedException {
         return peripheral.callMethod(computer, context, method, arguments);
     }
 }

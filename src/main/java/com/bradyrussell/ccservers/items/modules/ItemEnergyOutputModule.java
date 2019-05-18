@@ -3,7 +3,12 @@ package com.bradyrussell.ccservers.items.modules;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import com.bradyrussell.ccservers.items.EServerModuleType;
 import com.bradyrussell.ccservers.items.ItemServerModuleBase;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.lua.LuaException;
+import dan200.computercraft.api.peripheral.IComputerAccess;
 import net.minecraft.item.ItemStack;
+
+import javax.annotation.Nonnull;
 
 public class ItemEnergyOutputModule extends ItemServerModuleBase {
     public ItemEnergyOutputModule(EServerModuleType type) {
@@ -16,7 +21,7 @@ public class ItemEnergyOutputModule extends ItemServerModuleBase {
     }
 
     @Override
-    public int getModuleEnergyCapacity(ItemStack moduleItem) {
+    public int getModuleServerEnergyCapacity(ItemStack moduleItem) {
         return 0;
     }
 
@@ -28,4 +33,6 @@ public class ItemEnergyOutputModule extends ItemServerModuleBase {
     public int getCurrentEnergyOutput(ItemStack moduleItem) {
         return 10;
     }
+
+
 }

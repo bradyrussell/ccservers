@@ -1,9 +1,13 @@
 package com.bradyrussell.ccservers.entities;
 
+import com.bradyrussell.ccservers.CCServers;
 import com.bradyrussell.ccservers.EServerChassisType;
 import com.bradyrussell.ccservers.EnergyDisplayAmount;
 import com.bradyrussell.ccservers.blocks.BlockServerChassis;
-import com.bradyrussell.ccservers.computercraft.*;
+import com.bradyrussell.ccservers.computercraft.CCUtil;
+import com.bradyrussell.ccservers.computercraft.ICCServersPeripheral;
+import com.bradyrussell.ccservers.computercraft.TestMount;
+import com.bradyrussell.ccservers.items.ItemServerLuaModuleBase;
 import com.bradyrussell.ccservers.items.ItemServerModuleBase;
 import com.bradyrussell.ccservers.items.modules.ItemEnergyOutputModule;
 import dan200.computercraft.api.lua.ILuaContext;
@@ -35,7 +39,9 @@ import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -56,6 +62,8 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
     public final int POS_BATTERY_SLOT = 0;
     public final int POS_FIRST_SERVER_SLOT = POS_BATTERY_SLOT + BATTERY_SLOTS_COUNT;
+
+    private boolean isServerEnabled = false;
 
     private EServerChassisType chassisType;
     private ServerEnergyStorage energyStorage;
@@ -81,9 +89,9 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
         setChassisType(eServerChassisType);
     }
 
-    public void setChassisType(EServerChassisType eServerChassisType){
+    public void setChassisType(EServerChassisType eServerChassisType) {
         chassisType = eServerChassisType;
-        if(eServerChassisType != null) {
+        if (eServerChassisType != null) {
             setEnergyStorage(new ServerEnergyStorage(chassisType.baseCapacity));
             setEnergyDisplay(EnergyDisplayAmount.fromEnergyAmount(getEnergyStorage().getEnergyStored()));
 
@@ -103,10 +111,14 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
     private static int timer = 0;
 
-/**     This method is called every tick to update the tile entity, i.e.
-     - see if the fuel has run out, and if so turn the furnace "off" and slowly uncook the current item (if any)
-     - see if any of the items have finished smelting
-     It runs both on the server and the client.*/
+    /**
+     * This method is called every tick to update the tile entity, i.e.
+     * - see if the fuel has run out, and if so turn the furnace "off" and slowly uncook the current item (if any)
+     * - see if any of the items have finished smelting
+     * It runs both on the server and the client.
+     */
+    private int rsBehaviorTimer = 0;
+
     @Override
     public void update() {
         // when the number of burning slots changes, we need to force the block to re-render, otherwise the change in
@@ -128,7 +140,9 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
 
         if (!world.isRemote) { // running on server
-            if (numberOfModulesInstalled() > 0) {
+            if (rsBehaviorTimer++ % 10 == 0) handleRedstoneBehavior();
+
+            if (numberOfModulesInstalled() > 0 && isServerEnabled()) {
                 int currentModuleEnergyConsumption = getCurrentModuleEnergyConsumption();
                 int extractEnergy = getEnergyStorage().extractEnergy(currentModuleEnergyConsumption, false);
 
@@ -137,16 +151,17 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
                 int pushedEnergy = 0;
                 int currentModuleEnergyOutput = getCurrentModuleEnergyOutput();
 
-                if(currentModuleEnergyOutput > 0) {
+                if (currentModuleEnergyOutput > 0) {
                     pushedEnergy = pushEnergyToOutput(currentModuleEnergyOutput);
                 }
 
                 setEnergyConsumedDisplay(EnergyDisplayAmount.fromEnergyAmount(pushedEnergy + extractEnergy));
 
-                if(extractEnergy > 0 && isCurrentlyPowered() && timer++%10==0) ((WorldServer)world).spawnParticle(EnumParticleTypes.REDSTONE,pos.getX()+.5,pos.getY()+1.5,pos.getZ()+.5, 1,.2,.2,.2,2.0,0,255,0);
+                if (extractEnergy > 0 && isCurrentlyPowered() && timer++ % 10 == 0)
+                    ((WorldServer) world).spawnParticle(EnumParticleTypes.REDSTONE, pos.getX() + .5, pos.getY() + 1.5, pos.getZ() + .5, 1, .2, .2, .2, 2.0, 0, 255, 0);
 
-                for(ItemStack module:serverSlots){
-                    if(!module.isEmpty() && module.getItem() instanceof ItemServerModuleBase) {
+                for (ItemStack module : serverSlots) {
+                    if (!module.isEmpty() && module.getItem() instanceof ItemServerModuleBase) {
                         ((ItemServerModuleBase) module.getItem()).onTick(module, this);
                     }
                 }
@@ -224,7 +239,7 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     // inserting items via the gui
     @Override
     public int getInventoryStackLimit() {
-        return 64;
+        return 1;
     }
 
     // Return true if the given player is able to use this block. In this case it checks that
@@ -245,6 +260,39 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     // Unlike the vanilla furnace, we allow anything to be placed in the fuel slots
     static public boolean isItemValidForServerModuleSlot(ItemStack itemStack) {
         return itemStack.getItem() instanceof ItemServerModuleBase;
+    }
+
+    private int previousRedstoneStrength = -1;
+
+    private void handleRedstoneBehavior() {
+        final int gettingPowered = this.world.isBlockIndirectlyGettingPowered(pos);
+
+        switch (redstoneBehavior) {
+            case DO_NOTHING:
+                break;
+            case NORMAL:
+                setServerEnabled(gettingPowered > 0);
+                break;
+            case INVERTED:
+                setServerEnabled(!(gettingPowered > 0));
+                break;
+            case ENABLE_ONLY:
+                if (!isServerEnabled() && gettingPowered > 0) {
+                    setServerEnabled(true);
+                }
+                break;
+            case DISABLE_ONLY:
+                if (isServerEnabled() && gettingPowered > 0) {
+                    setServerEnabled(false);
+                }
+                break;
+            case TOGGLE_ON_CHANGE:
+                if (previousRedstoneStrength != gettingPowered) {
+                    setServerEnabled(!isServerEnabled());
+                }
+                break;
+        }
+        previousRedstoneStrength = gettingPowered;
     }
 
 
@@ -268,6 +316,7 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
         parentNBTTagCompound.setTag("Items", dataForAllSlots);
         parentNBTTagCompound.setTag("server_energy", getEnergyStorage().serializeNBT());
+        parentNBTTagCompound.setBoolean("server_enabled", isServerEnabled());
         parentNBTTagCompound.setTag("chassis_type", new NBTTagByte((byte) getChassisType().ordinal()));
         parentNBTTagCompound.setTag("chassis_rs_behavior", new NBTTagByte((byte) getRedstoneBehavior().ordinal()));
 
@@ -279,11 +328,11 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     public void readFromNBT(NBTTagCompound nbtTagCompound) {
         super.readFromNBT(nbtTagCompound); // The super call is required to save and load the tiles location
 
-        if(getChassisType() == null){
-            setChassisType(EServerChassisType.values()[(int)nbtTagCompound.getByte("chassis_type")]);
+        if (getChassisType() == null) {
+            setChassisType(EServerChassisType.values()[(int) nbtTagCompound.getByte("chassis_type")]);
         }
 
-        setRedstoneBehavior(EServerRedstoneBehavior.values()[(int)nbtTagCompound.getByte("chassis_rs_behavior")]);
+        setRedstoneBehavior(EServerRedstoneBehavior.values()[(int) nbtTagCompound.getByte("chassis_rs_behavior")]);
 
         final byte NBT_TYPE_COMPOUND = 10;       // See NBTBase.createNewByType() for a listing
         NBTTagList dataForAllSlots = nbtTagCompound.getTagList("Items", NBT_TYPE_COMPOUND);
@@ -296,6 +345,8 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
                 this.serverSlots[slotNumber] = new ItemStack(dataForOneSlot);
             }
         }
+
+        setServerEnabled(nbtTagCompound.getBoolean("server_enabled"));
 
         getEnergyStorage().deserializeNBT(nbtTagCompound.getCompoundTag("server_energy"));
         cachedNumberOfFilledServerSlots = -1;
@@ -345,7 +396,7 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     // will add a key for this container to the lang file so we can name it in the GUI
     @Override
     public String getName() {
-        return "container."+ getChassisType().registryName+".name";
+        return "container." + getChassisType().registryName + ".name";
     }
 
     @Override
@@ -366,28 +417,39 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     //   in the network packets)
     // If you need more than this, or shorts are too small, use a custom packet in your container instead.
 
-    private static final int FIELD_COUNT = 7;
-    private static final byte ENERGY_FIELD_ID = 0;
-    private static final byte ENERGY_SUFFIX_FIELD_ID = 1;
-    private static final byte ENERGY_PCT_FIELD_ID = 2;
-    private static final byte ENERGY_CONSUME_FIELD_ID = 3;
-    private static final byte ENERGY_CONSUME_SUFFIX_FIELD_ID = 4;
-    private static final byte ENERGY_MAX_FIELD_ID = 5;
-    private static final byte ENERGY_MAX_SUFFIX_FIELD_ID = 6;
+    private static byte fieldCount = 0;
+
+    private static final byte ENERGY_FIELD_ID = fieldCount++;
+    private static final byte ENERGY_SUFFIX_FIELD_ID = fieldCount++;
+    private static final byte ENERGY_PCT_FIELD_ID = fieldCount++;
+    private static final byte ENERGY_CONSUME_FIELD_ID = fieldCount++;
+    private static final byte ENERGY_CONSUME_SUFFIX_FIELD_ID = fieldCount++;
+    private static final byte ENERGY_MAX_FIELD_ID = fieldCount++;
+    private static final byte ENERGY_MAX_SUFFIX_FIELD_ID = fieldCount++;
+    private static final byte SERVER_ENABLED_FIELD_ID = fieldCount++;
+    private static final byte SERVER_RS_BHV_FIELD_ID = fieldCount++;
+
+    private static final int FIELD_COUNT = fieldCount;
 
     @Override
     public int getField(int id) {
-        if (id == ENERGY_FIELD_ID) return EnergyDisplayAmount.fromEnergyAmount(getEnergyStorage().getEnergyStored()).getAmountShort();
+        if (id == ENERGY_FIELD_ID)
+            return EnergyDisplayAmount.fromEnergyAmount(getEnergyStorage().getEnergyStored()).getAmountShort();
 
-        if (id == ENERGY_SUFFIX_FIELD_ID) return EnergyDisplayAmount.fromEnergyAmount(getEnergyStorage().getEnergyStored()).getSuffixShort();
+        if (id == ENERGY_SUFFIX_FIELD_ID)
+            return EnergyDisplayAmount.fromEnergyAmount(getEnergyStorage().getEnergyStored()).getSuffixShort();
 
-        if (id == ENERGY_PCT_FIELD_ID) return (int)(fractionOfEnergyStored()*100);
+        if (id == ENERGY_PCT_FIELD_ID) return (int) (fractionOfEnergyStored() * 100);
 
         if (id == ENERGY_CONSUME_FIELD_ID) return getEnergyConsumedDisplay().getAmountShort();
         if (id == ENERGY_CONSUME_SUFFIX_FIELD_ID) return getEnergyConsumedDisplay().getSuffixShort();
 
         if (id == ENERGY_MAX_FIELD_ID) return getEnergyCapacityDisplay().getAmountShort();
         if (id == ENERGY_MAX_SUFFIX_FIELD_ID) return getEnergyCapacityDisplay().getSuffixShort();
+
+        if (id == SERVER_ENABLED_FIELD_ID) return isServerEnabled() ? 1 : 0;
+
+        if (id == SERVER_RS_BHV_FIELD_ID) return getRedstoneBehavior().ordinal();
 
         System.err.println("Invalid field ID in TileInventorySmelting.getField:" + id);
         return 0;
@@ -397,23 +459,22 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     public void setField(int id, int value) {
         if (id == ENERGY_FIELD_ID) {
             getEnergyDisplay().setAmountFromShort((short) value);
-        }
-        else if (id == ENERGY_SUFFIX_FIELD_ID) {
+        } else if (id == ENERGY_SUFFIX_FIELD_ID) {
             getEnergyDisplay().setSuffixFromShort((short) value);
-        }
-        else if (id == ENERGY_PCT_FIELD_ID) {
-            displayEnergyPct = value/100.0;
+        } else if (id == ENERGY_PCT_FIELD_ID) {
+            displayEnergyPct = value / 100.0;
         } else if (id == ENERGY_CONSUME_FIELD_ID) {
             getEnergyConsumedDisplay().setAmountFromShort((short) value);
-        }
-        else if (id == ENERGY_CONSUME_SUFFIX_FIELD_ID) {
+        } else if (id == ENERGY_CONSUME_SUFFIX_FIELD_ID) {
             getEnergyConsumedDisplay().setSuffixFromShort((short) value);
-        }
-        else if (id == ENERGY_MAX_FIELD_ID) {
+        } else if (id == ENERGY_MAX_FIELD_ID) {
             getEnergyCapacityDisplay().setAmountFromShort((short) value);
-        }
-        else if (id == ENERGY_MAX_SUFFIX_FIELD_ID) {
+        } else if (id == ENERGY_MAX_SUFFIX_FIELD_ID) {
             getEnergyCapacityDisplay().setSuffixFromShort((short) value);
+        } else if (id == SERVER_ENABLED_FIELD_ID) {
+            setServerEnabled(value == 1);
+        } else if (id == SERVER_RS_BHV_FIELD_ID) {
+            setRedstoneBehavior(EServerRedstoneBehavior.values()[value]);
         }
     }
 
@@ -448,7 +509,7 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
     @Override
     public void openInventory(EntityPlayer player) {
-        getEnergyStorage().receiveEnergy(100,false);
+        getEnergyStorage().receiveEnergy(100, false);
     }
 
     @Override
@@ -457,19 +518,19 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        if(Objects.equals(facing, this.world.getBlockState(pos).getValue(BlockServerChassis.PROPERTYFACING)))
+        if (Objects.equals(facing, this.world.getBlockState(pos).getValue(BlockServerChassis.PROPERTYFACING)))
             return super.hasCapability(capability, facing);
-        if(capability == CapabilityEnergy.ENERGY) return true;
+        if (capability == CapabilityEnergy.ENERGY) return true;
         return super.hasCapability(capability, facing);
     }
 
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) { // todo: direction facing to be power output IF power output module is installed
-        if(Objects.equals(facing, this.world.getBlockState(pos).getValue(BlockServerChassis.PROPERTYFACING)))
+        if (Objects.equals(facing, this.world.getBlockState(pos).getValue(BlockServerChassis.PROPERTYFACING)))
             return super.getCapability(capability, facing);
 
-        if(capability == CapabilityEnergy.ENERGY){
+        if (capability == CapabilityEnergy.ENERGY) {
             return (T) getEnergyStorage();
         }
         return super.getCapability(capability, facing);
@@ -477,24 +538,33 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
 
     public int numberOfModulesInstalled() {
         int slotsFilled = 0;
-        for(ItemStack i:serverSlots){
-            if(!i.isEmpty()) slotsFilled++;
+        for (ItemStack i : serverSlots) {
+            if (!i.isEmpty()) slotsFilled++;
         }
         return slotsFilled;
     }
 
+    public ArrayList<ItemStack> getLuaModulesInstalled() {
+        ArrayList<ItemStack> modules = new ArrayList<>();
+        for (ItemStack i : serverSlots) {
+            if (i.getItem() instanceof ItemServerLuaModuleBase) modules.add(i);
+        }
+        return modules;
+    }
+
     public int getCurrentModuleEnergyConsumption() {
         int energyConsumption = 0;
-        for(ItemStack i:serverSlots){
-            if(!i.isEmpty()) energyConsumption += ((ItemServerModuleBase)i.getItem()).getCurrentEnergyConsumption(i);
+        for (ItemStack i : serverSlots) {
+            if (!i.isEmpty()) energyConsumption += ((ItemServerModuleBase) i.getItem()).getCurrentEnergyConsumption(i);
         }
         return energyConsumption;
     }
 
     public int getCurrentModuleEnergyOutput() {
         int energyOutput = 0;
-        for(ItemStack i:serverSlots){
-            if(!i.isEmpty() && i.getItem() instanceof ItemEnergyOutputModule) energyOutput += ((ItemEnergyOutputModule)i.getItem()).getCurrentEnergyOutput(i);
+        for (ItemStack i : serverSlots) {
+            if (!i.isEmpty() && i.getItem() instanceof ItemEnergyOutputModule)
+                energyOutput += ((ItemEnergyOutputModule) i.getItem()).getCurrentEnergyOutput(i);
         }
         return energyOutput;
     }
@@ -502,7 +572,7 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
     public void RecalculateEnergyCapacity() {
         int energyCapacity = 0;
         for (ItemStack i : serverSlots) {
-            if (!i.isEmpty()) energyCapacity += ((ItemServerModuleBase) i.getItem()).getModuleEnergyCapacity(i);
+            if (!i.isEmpty()) energyCapacity += ((ItemServerModuleBase) i.getItem()).getModuleServerEnergyCapacity(i);
         }
         getEnergyStorage().setCapacity(getChassisType().baseCapacity + energyCapacity);
         getEnergyStorage().setEnergyStored(Math.min(getChassisType().baseCapacity + energyCapacity, getEnergyStorage().getEnergyStored()));
@@ -510,7 +580,7 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
         /*System.out.println("Current Energy: " + energyStorage.getEnergyStored() + "Max Energy: " + energyStorage.getMaxEnergyStored() + " for " + chassisType);*/
     }
 
-    public int pushEnergyToOutput(int energy){
+    public int pushEnergyToOutput(int energy) {
         // push to other face IF EXISTS
         EnumFacing outputDirection = this.world.getBlockState(pos).getValue(BlockServerChassis.PROPERTYFACING);
         TileEntity outputTileEntity = world.getTileEntity(pos.add(outputDirection.getDirectionVec()));
@@ -577,35 +647,84 @@ public class TileEntityServerChassis extends TileEntity implements IInventory, I
         this.redstoneBehavior = redstoneBehavior;
     }
 
+    public boolean isServerEnabled() {
+        return isServerEnabled;
+    }
+
+    public void setServerEnabled(boolean serverEnabled) {
+        isServerEnabled = serverEnabled;
+    }
+
     /* Computercraft Peripheral API Below */
     @Nonnull
     @Override
     public String getType() {
-        return chassisType.registryName;
+        return CCServers.prependModID(chassisType.registryName);
     }
 
     @Nonnull
     @Override
     public String[] getMethodNames() {
-        return new String[]{"listModules","getModule"};
+        return new String[]{"getServerEnabled", "setServerEnabled", "getServerStatus", "listModules", "getModuleBySlot", "getModuleByName", "getNumberSlots"};
     }
 
     @Nullable
     @Override
     public Object[] callMethod(@Nonnull IComputerAccess computer, @Nonnull ILuaContext lua, int method, @Nonnull Object[] arguments) throws LuaException, InterruptedException {
-        switch (method){
-            case 0:{
-                //return CCUtil.wrapPeripheral(new IC, computer); // todo cant make item clas implement interface, as it is essentially static. need unique inst per running itemstack
+        switch (method) {
+            case 0: {
+                return new Object[]{isServerEnabled()};
             }
-            default:{
-                return null;
+            case 1: {
+                if (arguments.length < 1) throw new LuaException("Expected 1 parameter");
+                if (!(arguments[0] instanceof Boolean)) throw new LuaException("Expected boolean for parameter 1");
+                setServerEnabled((Boolean) arguments[0]);
+                return new Object[]{true};
+            }
+            case 2: {
+                final HashMap<String, Object> map = new HashMap<>();
+                map.put("energyConsumption", getCurrentModuleEnergyConsumption());
+                map.put("energyOutput", getCurrentModuleEnergyOutput());
+                map.put("energyStored", getEnergyStorage().getEnergyStored());
+                map.put("energyCapacity", getEnergyStorage().getMaxEnergyStored());
+                map.put("currentlyPowered", isCurrentlyPowered() ? 1 : 0); // converted to number to allow easy iteration of the table
+                map.put("currentlyEnabled", isServerEnabled() ? 1 : 0);
+                return new Object[]{map};
+            }
+            case 3: {
+                String[] names = new String[serverSlots.length];
+
+                int i = 0;
+                for (ItemStack itemStack : serverSlots) {
+                    if (itemStack == null || itemStack.isEmpty()) names[i++] = "empty";
+                    else
+                        names[i++] = CCServers.prependModID(((ItemServerModuleBase) itemStack.getItem()).type.registryName);
+                }
+                return names;
+            }
+            case 4: {
+                if (arguments.length < 1) throw new LuaException("Expected 1 parameter");
+                if (!(arguments[0] instanceof Double)) throw new LuaException("Expected number for parameter 1");
+
+                final ItemStack stackInSlot = getStackInSlot((int) Math.floor((Double) arguments[0]) - 1);
+                if (stackInSlot == null || stackInSlot.isEmpty() || !(stackInSlot.getItem() instanceof ItemServerModuleBase))
+                    return null;
+                if (!(stackInSlot.getItem() instanceof ItemServerLuaModuleBase))
+                    return new Object[]{CCServers.prependModID(((ItemServerModuleBase) stackInSlot.getItem()).type.registryName)}; // if not lua module just return its name
+                return CCUtil.wrapModule(stackInSlot, computer);
+            }
+            case 6: {
+                return new Object[]{chassisType.availableSlots};
+            }
+            default: {
+                throw new LuaException("not yet implemented: " + getMethodNames()[method]);
             }
         }
     }
 
     @Override
     public void attach(@Nonnull IComputerAccess computer) {
-        computer.mount("a", new TestMount());
+        computer.mount(chassisType.registryName, new TestMount());
     }
 
     @Override

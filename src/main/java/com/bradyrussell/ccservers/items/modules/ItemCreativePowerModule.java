@@ -3,7 +3,12 @@ package com.bradyrussell.ccservers.items.modules;
 import com.bradyrussell.ccservers.entities.TileEntityServerChassis;
 import com.bradyrussell.ccservers.items.EServerModuleType;
 import com.bradyrussell.ccservers.items.ItemServerModuleBase;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.lua.LuaException;
+import dan200.computercraft.api.peripheral.IComputerAccess;
 import net.minecraft.item.ItemStack;
+
+import javax.annotation.Nonnull;
 
 public class ItemCreativePowerModule extends ItemServerModuleBase {
     public ItemCreativePowerModule(EServerModuleType type) {
@@ -17,7 +22,7 @@ public class ItemCreativePowerModule extends ItemServerModuleBase {
 
 
     @Override
-    public int getModuleEnergyCapacity(ItemStack moduleItem) {
+    public int getModuleServerEnergyCapacity(ItemStack moduleItem) {
         return 0;
     }
 
@@ -30,4 +35,5 @@ public class ItemCreativePowerModule extends ItemServerModuleBase {
             i = 0;
         }
     }
+
 }
