@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "up": "blocks/diamond_block",
+        "down": "blocks/diamond_block",
+        "north": "ccservers:server_diamond_slots_0",
+        "east": "ccservers:server_diamond_slots_0",
+        "south": "ccservers:server_diamond_slots_0",
+        "west": "ccservers:server_diamond_slots_0",
+        "particle": "blocks/diamond_block"
+    }
+}

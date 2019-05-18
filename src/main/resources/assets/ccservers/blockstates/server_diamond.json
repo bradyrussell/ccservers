@@ -1,0 +1,34 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "model": "ccservers:server_diamond",
+    "uvlock": true
+  },
+  "variants": {
+    "slots_filled_count": {
+      "0": { "textures": { "north": "ccservers:server_diamond_slots_0", "south": "ccservers:server_diamond_slots_0"} },
+      "1": { "textures": { "north": "ccservers:server_diamond_slots_1", "south": "ccservers:server_diamond_slots_0"} },
+      "2": { "textures": { "north": "ccservers:server_diamond_slots_2", "south": "ccservers:server_diamond_slots_0"} },
+      "3": { "textures": { "north": "ccservers:server_diamond_slots_3", "south": "ccservers:server_diamond_slots_0"} },
+      "4": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_0"} },
+      "5": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_1"} },
+      "6": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_2"} },
+      "7": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_3"} },
+      "8": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4"} },
+      "9": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_1", "west": "ccservers:server_diamond_slots_0"} },
+      "10": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_2", "west": "ccservers:server_diamond_slots_0"} },
+      "11": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_3", "west": "ccservers:server_diamond_slots_0"} },
+      "12": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_4", "west": "ccservers:server_diamond_slots_0"} },
+      "13": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_4", "west": "ccservers:server_diamond_slots_1"} },
+      "14": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_4", "west": "ccservers:server_diamond_slots_2"} },
+      "15": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_4", "west": "ccservers:server_diamond_slots_3"} },
+      "16": { "textures": { "north": "ccservers:server_diamond_slots_4", "south": "ccservers:server_diamond_slots_4","east": "ccservers:server_diamond_slots_4", "west": "ccservers:server_diamond_slots_4"} }
+    },
+    "facing": {
+      "north": { "model": "ccservers:server_diamond"},
+      "east": { "model": "ccservers:server_diamond","y": 90 },
+      "south": { "model": "ccservers:server_diamond","y": 180 },
+      "west": { "model": "ccservers:server_diamond","y": 270 }
+    }
+  }
+}

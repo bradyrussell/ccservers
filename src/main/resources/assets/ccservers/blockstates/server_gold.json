@@ -1,0 +1,36 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "model": "ccservers:server_gold",
+    "uvlock": true
+  },
+  "variants": {
+    "slots_filled_count": {
+      "0": { "textures": { "north": "ccservers:server_gold_slots_0", "south": "ccservers:server_gold_slots_0"} },
+      "1": { "textures": { "north": "ccservers:server_gold_slots_1", "south": "ccservers:server_gold_slots_0"} },
+      "2": { "textures": { "north": "ccservers:server_gold_slots_2", "south": "ccservers:server_gold_slots_0"} },
+      "3": { "textures": { "north": "ccservers:server_gold_slots_3", "south": "ccservers:server_gold_slots_0"} },
+      "4": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_0"} },
+      "5": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_1"} },
+      "6": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_2"} },
+      "7": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_3"} },
+      "8": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+
+
+      "9": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "10": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "11": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "12": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "13": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "14": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "15": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} },
+      "16": { "textures": { "north": "ccservers:server_gold_slots_4", "south": "ccservers:server_gold_slots_4"} }
+    },
+    "facing": {
+      "north": { "model": "ccservers:server_gold"},
+      "east": { "model": "ccservers:server_gold","y": 90 },
+      "south": { "model": "ccservers:server_gold","y": 180 },
+      "west": { "model": "ccservers:server_gold","y": 270 }
+    }
+  }
+}

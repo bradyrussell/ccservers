@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "up": "blocks/gold_block",
+        "down": "blocks/gold_block",
+        "north": "ccservers:server_gold_slots_0",
+        "east": "blocks/gold_block",
+        "south": "ccservers:server_gold_slots_0",
+        "west": "blocks/gold_block",
+        "particle": "blocks/gold_block"
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "parent": "block/orientable",
+    "textures": {
+        "top": "blocks/iron_block",
+        "front": "ccservers:server_iron_slots_0",
+        "side": "blocks/iron_block",
+        "particle": "blocks/iron_block"
+    }
+}

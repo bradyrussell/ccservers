@@ -1,0 +1,36 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "model": "ccservers:server_iron",
+    "uvlock": true
+  },
+  "variants": {
+    "slots_filled_count": {
+      "0": { "textures": { "front": "ccservers:server_iron_slots_0" } },
+      "1": { "textures": { "front": "ccservers:server_iron_slots_1" } },
+      "2": { "textures": { "front": "ccservers:server_iron_slots_2" } },
+      "3": { "textures": { "front": "ccservers:server_iron_slots_3" } },
+      "4": { "textures": { "front": "ccservers:server_iron_slots_4" } },
+
+      "5": { "textures": { "front": "ccservers:server_iron_slots_0" } },
+      "6": { "textures": { "front": "ccservers:server_iron_slots_1" } },
+      "7": { "textures": { "front": "ccservers:server_iron_slots_2" } },
+      "8": { "textures": { "front": "ccservers:server_iron_slots_3" } },
+      "9": { "textures": { "front": "ccservers:server_iron_slots_4" } },
+      "10": { "textures": { "front": "ccservers:server_iron_slots_0" } },
+      "11": { "textures": { "front": "ccservers:server_iron_slots_1" } },
+      "12": { "textures": { "front": "ccservers:server_iron_slots_2" } },
+      "13": { "textures": { "front": "ccservers:server_iron_slots_3" } },
+      "14": { "textures": { "front": "ccservers:server_iron_slots_4" } },
+      "15": { "textures": { "front": "ccservers:server_iron_slots_0" } },
+      "16": { "textures": { "front": "ccservers:server_iron_slots_1" } }
+
+    },
+    "facing": {
+      "north": { "model": "ccservers:server_iron"},
+      "east": { "model": "ccservers:server_iron","y": 90 },
+      "south": { "model": "ccservers:server_iron","y": 180 },
+      "west": { "model": "ccservers:server_iron","y": 270 }
+    }
+  }
+}

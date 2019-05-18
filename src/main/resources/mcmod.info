@@ -1,0 +1,16 @@
+[
+{
+  "modid": "CCServers",
+  "name": "ComputerCraft Servers",
+  "description": "adds performant servers with special features at the cost of power",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["BradyRussell"],
+  "credits": "BradyRussell, the MBE github",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
